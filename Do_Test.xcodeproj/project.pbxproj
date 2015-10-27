@@ -11,6 +11,7 @@
 		3BB696821BD4EEBE00BF45C7 /* do_MarqueeLabel_UIView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3BB696801BD4EEBE00BF45C7 /* do_MarqueeLabel_UIView.m */; settings = {ASSET_TAGS = (); }; };
 		3BB696831BD4EEF800BF45C7 /* do_MarqueeLabel_UIModel.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 3BB6967D1BD4EEBE00BF45C7 /* do_MarqueeLabel_UIModel.h */; };
 		3BB696841BD4EEF800BF45C7 /* do_MarqueeLabel_UIView.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 3BB6967F1BD4EEBE00BF45C7 /* do_MarqueeLabel_UIView.h */; };
+		3BB696871BD4F1E100BF45C7 /* doAutoScrollLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 3BB696861BD4F1E100BF45C7 /* doAutoScrollLabel.m */; settings = {ASSET_TAGS = (); }; };
 		A44BC6701AEE005E001580AA /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A44BC66F1AEE005E001580AA /* main.m */; };
 		A44BC6731AEE005E001580AA /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = A44BC6721AEE005E001580AA /* AppDelegate.m */; };
 		A44BC6761AEE005E001580AA /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A44BC6751AEE005E001580AA /* ViewController.m */; };
@@ -70,6 +71,8 @@
 		3BB6967E1BD4EEBE00BF45C7 /* do_MarqueeLabel_UIModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = do_MarqueeLabel_UIModel.m; sourceTree = "<group>"; };
 		3BB6967F1BD4EEBE00BF45C7 /* do_MarqueeLabel_UIView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = do_MarqueeLabel_UIView.h; sourceTree = "<group>"; };
 		3BB696801BD4EEBE00BF45C7 /* do_MarqueeLabel_UIView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = do_MarqueeLabel_UIView.m; sourceTree = "<group>"; };
+		3BB696851BD4F1E100BF45C7 /* doAutoScrollLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = doAutoScrollLabel.h; sourceTree = "<group>"; };
+		3BB696861BD4F1E100BF45C7 /* doAutoScrollLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = doAutoScrollLabel.m; sourceTree = "<group>"; };
 		A44BC66A1AEE005E001580AA /* Do_Test.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Do_Test.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A44BC66E1AEE005E001580AA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A44BC66F1AEE005E001580AA /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -362,6 +365,8 @@
 				3BB6967F1BD4EEBE00BF45C7 /* do_MarqueeLabel_UIView.h */,
 				3BB696801BD4EEBE00BF45C7 /* do_MarqueeLabel_UIView.m */,
 				A4A1A01C1AF0F82B00D835A5 /* do_Test.json */,
+				3BB696851BD4F1E100BF45C7 /* doAutoScrollLabel.h */,
+				3BB696861BD4F1E100BF45C7 /* doAutoScrollLabel.m */,
 			);
 			path = doExtLib;
 			sourceTree = "<group>";
@@ -513,6 +518,7 @@
 			files = (
 				3BB696811BD4EEBE00BF45C7 /* do_MarqueeLabel_UIModel.m in Sources */,
 				3BB696821BD4EEBE00BF45C7 /* do_MarqueeLabel_UIView.m in Sources */,
+				3BB696871BD4F1E100BF45C7 /* doAutoScrollLabel.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
