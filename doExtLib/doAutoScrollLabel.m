@@ -8,6 +8,7 @@
 
 #import "doAutoScrollLabel.h"
 #import <CoreText/CoreText.h>
+
 #define FONT_OBLIQUITY 15.0
 
 @implementation doAutoScrollLabel
@@ -21,6 +22,8 @@
     UILabel *mainLab;
     UILabel *rightLab;
     CGFloat curFontSize;
+    NSString *curFontStyle;
+    NSMutableDictionary *attributeDict;
 }
 - (instancetype)initWithFrame:(CGRect)frame
 {
@@ -33,6 +36,12 @@
         [self addSubview:rightLab];
         labelArr = [NSMutableArray arrayWithObject:mainLab];
         [labelArr addObject:rightLab];
+        curFontSize = 11;
+        curFontStyle = @"normal";
+        attributeDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                           [UIFont systemFontOfSize:11],NSFontAttributeName,
+                                           [UIColor blackColor],NSForegroundColorAttributeName,
+                                           NSUnderlineStyleAttributeName,@(NSUnderlineStyleNone),nil];
     }
     return self;
 }
@@ -88,42 +97,45 @@
 #pragma -mark -重写set方法
 -(void)setFontColor:(UIColor *)fontColor
 {
-    NSMutableAttributedString *attributeStr = [[NSMutableAttributedString alloc]initWithAttributedString:[self getTextAttributeString]];
-    if (attributeStr.length <= 0) {
+    attributeDict[NSForegroundColorAttributeName] = fontColor;
+    NSMutableAttributedString *attributedStr = [[NSMutableAttributedString alloc]initWithString:mainLab.text attributes:attributeDict];
+    
+    if (attributedStr.length <= 0) {
         return;
     }
-    [attributeStr addAttribute:(id)kCTForegroundColorAttributeName value:(id)[UIColor redColor].CGColor range:NSMakeRange(0, attributeStr.length)];
-    [mainLab setAttributedText:attributeStr];
-    [rightLab setAttributedText:attributeStr];
+    [mainLab setAttributedText:attributedStr];
+    [rightLab setAttributedText:attributedStr];
 }
 - (void)setFontSize:(CGFloat)fontSize
 {
     curFontSize = fontSize;
-    NSMutableAttributedString *attributeStr = [[NSMutableAttributedString alloc]initWithAttributedString:[self getTextAttributeString]];
-    if (attributeStr.length <= 0) {
-        return;
+    UIFont *curFont;
+    if([curFontStyle isEqualToString:@"normal"])
+    {
+        curFont = [UIFont systemFontOfSize:curFontSize];
     }
-    UIFont *font = [UIFont systemFontOfSize:fontSize];
-    CTFontRef ctFont =CTFontCreateWithName((CFStringRef)font.fontName,
-                                           font.pointSize,
-                                           NULL);
-    [attributeStr addAttribute:(id)kCTFontAttributeName value:(__bridge id)ctFont range:NSMakeRange(0, attributeStr.length)];
-    ctFont = nil;
+    else if([curFontStyle isEqualToString:@"bold"])
+    {
+        curFont = [UIFont boldSystemFontOfSize:curFontSize];
+    }
+    else if([curFontStyle isEqualToString:@"italic"])
+    {
+        CGAffineTransform matrix =  CGAffineTransformMake(1, 0, tanf(FONT_OBLIQUITY * (CGFloat)M_PI / 180), 1, 0, 0);
+        UIFontDescriptor *desc = [ UIFontDescriptor fontDescriptorWithName :[ UIFont systemFontOfSize :curFontSize ]. fontName matrix :matrix];
+        curFont = [UIFont fontWithDescriptor:desc size:curFontSize];
+    }
+    [attributeDict setObject:curFont forKey:NSFontAttributeName];
+    NSMutableAttributedString *attributeStr = [[NSMutableAttributedString alloc]initWithString:mainLab.text attributes:attributeDict];
     [mainLab setAttributedText:attributeStr];
     [rightLab setAttributedText:attributeStr];
-    NSDictionary *fontDec = [mainLab.attributedText attributesAtIndex:0 effectiveRange:nil];
-    CGSize fontSizes = [mainLab.text sizeWithAttributes:fontDec];
+
+    CGSize fontSizes = [mainLab.text sizeWithAttributes:attributeDict];
     rectMark1 = CGRectMake(0, 0, fontSizes.width, self.bounds.size.height);
     rectMark2 = CGRectMake(rectMark1.origin.x+rectMark1.size.width, 0, fontSizes.width, self.bounds.size.height);
-//    mainLab.frame = rectMark1;
-//    rightLab.frame = rectMark2;
 }
 - (void)setFontStyle:(NSString *)fontStyle
 {
-    NSMutableAttributedString *attributeStr = [[NSMutableAttributedString alloc]initWithAttributedString:[self getTextAttributeString]];
-    if (attributeStr.length <= 0) {
-        return;
-    }
+    curFontStyle = fontStyle;
     UIFont *font;
     if([fontStyle isEqualToString:@"normal"])
     {
@@ -140,19 +152,14 @@
         font = [UIFont fontWithDescriptor:desc size:curFontSize];
     }
     else if([fontStyle isEqualToString:@"bold_italic"]){}//不支持
-    
-
-    CTFontRef ctFont =CTFontCreateWithName((CFStringRef)font.fontName,
-                                           font.pointSize,
-                                           NULL);
-    [attributeStr addAttribute:(id)kCTFontAttributeName value:(__bridge id)ctFont range:NSMakeRange(0, attributeStr.length)];
-    ctFont = nil;
+    [attributeDict setObject:font forKey:NSFontAttributeName];
+    NSMutableAttributedString *attributeStr = [[NSMutableAttributedString alloc]initWithString:mainLab.text attributes:attributeDict];
     [mainLab setAttributedText:attributeStr];
     [rightLab setAttributedText:attributeStr];
 }
 - (void)setText:(NSString *)text
 {
-    NSMutableAttributedString *attributeStr = [[NSMutableAttributedString alloc]initWithString:text];
+    NSMutableAttributedString *attributeStr = [[NSMutableAttributedString alloc]initWithString:text attributes:attributeDict];
     if (attributeStr.length <= 0) {
         return;
     }
@@ -173,20 +180,17 @@
 }
 - (void)setTextFlag:(NSString *)textFlag
 {
-    NSMutableAttributedString *attributeStr = [[NSMutableAttributedString alloc]initWithAttributedString:[self getTextAttributeString]];
-    if (attributeStr.length <= 0) {
-        return;
-    }
-    NSRange contentRange = {0,[attributeStr length]};
     if ([textFlag isEqualToString:@"normal" ]) {
-        [attributeStr removeAttribute:NSUnderlineStyleAttributeName range:contentRange];
-        [attributeStr removeAttribute:NSStrikethroughStyleAttributeName range:contentRange];
+        attributeDict[NSUnderlineStyleAttributeName] = @(NSUnderlineStyleNone);
+        attributeDict[NSStrikethroughStyleAttributeName] = @(NSUnderlineStyleNone);
     }else if ([textFlag isEqualToString:@"underline" ]) {
-        [attributeStr addAttribute:NSUnderlineStyleAttributeName value:[NSNumber numberWithInteger:NSUnderlineStyleSingle] range:contentRange];
-    }else if ([textFlag isEqualToString:@"strikethrough" ]) {
-        [attributeStr addAttribute:NSStrikethroughStyleAttributeName value:[NSNumber numberWithInteger:NSUnderlineStyleSingle] range:contentRange];
+        attributeDict[NSUnderlineStyleAttributeName] = @(NSUnderlineStyleSingle);
     }
-    
+    else if ([textFlag isEqualToString:@"strikethrough" ]) {
+        [attributeDict setObject:@(NSUnderlineStyleSingle) forKey:NSStrikethroughStyleAttributeName];
+        attributeDict[NSUnderlineStyleAttributeName] = @(NSUnderlineStyleSingle);
+    }
+    NSMutableAttributedString *attributeStr = [[NSMutableAttributedString alloc]initWithString:mainLab.text attributes:attributeDict];
     [mainLab setAttributedText:attributeStr];
     [rightLab setAttributedText:attributeStr];
 }
