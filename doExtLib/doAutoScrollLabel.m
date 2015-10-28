@@ -194,13 +194,4 @@
     [mainLab setAttributedText:attributeStr];
     [rightLab setAttributedText:attributeStr];
 }
-#pragma -mark - 私有方法
--(NSAttributedString *)getTextAttributeString
-{
-    return mainLab.attributedText;
-}
-- (void)setTextAttributeString:(NSMutableAttributedString *)attributedText
-{
-    mainLab.attributedText = attributedText;
-}
 @end
