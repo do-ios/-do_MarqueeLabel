@@ -78,12 +78,6 @@
 {
     //自己的代码实现
     _marqueeLabel.text = newValue;
-    [_marqueeLabel start];
-}
-- (void)change_textAlign:(NSString *)newValue
-{
-    //自己的代码实现
-    _marqueeLabel.textAlgin = newValue;
 }
 - (void)change_textFlag:(NSString *)newValue
 {

@@ -13,7 +13,6 @@
 @property (nonatomic,assign) CGFloat fontSize;
 @property (nonatomic,strong) NSString *fontStyle;
 @property (nonatomic,strong) NSString *text;
-@property (nonatomic,strong) NSString *textAlgin;
 @property (nonatomic,strong) NSString *textFlag;
 - (instancetype)initWithFrame:(CGRect)frame;
 

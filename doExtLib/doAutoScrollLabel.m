@@ -10,17 +10,18 @@
 #import <CoreText/CoreText.h>
 
 #define FONT_OBLIQUITY 15.0
+#define ANIMATIONKEY @"animationKey"
 
 @implementation doAutoScrollLabel
 {
     
     CGRect rectMark1;//标记第一个位置
-    CGRect rectMark2;//标记第二个位置
+//    CGRect rectMark2;//标记第二个位置
     NSMutableArray* labelArr;
     NSTimeInterval timeInterval;//时间
     BOOL isStop;//停止
     UILabel *mainLab;
-    UILabel *rightLab;
+//    UILabel *rightLab;
     CGFloat curFontSize;
     NSString *curFontStyle;
     NSMutableDictionary *attributeDict;
@@ -31,11 +32,11 @@
     if (self) {
         self.clipsToBounds = YES;
         mainLab = [[UILabel alloc]init];
-        rightLab = [[UILabel alloc]init];
+//        rightLab = [[UILabel alloc]init];
         [self addSubview:mainLab];
-        [self addSubview:rightLab];
+//        [self addSubview:rightLab];
         labelArr = [NSMutableArray arrayWithObject:mainLab];
-        [labelArr addObject:rightLab];
+//        [labelArr addObject:rightLab];
         curFontSize = 11;
         curFontStyle = @"normal";
         attributeDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
@@ -47,22 +48,18 @@
 }
 - (void)start
 {
-    timeInterval = [self displayDurationForString:mainLab.text];
     NSDictionary *fontDec = [mainLab.attributedText attributesAtIndex:0 effectiveRange:nil];
     CGSize fontSize = [mainLab.text sizeWithAttributes:fontDec];
     rectMark1 = CGRectMake(0, 0, fontSize.width, self.bounds.size.height);
-    rectMark2 = CGRectMake(rectMark1.origin.x+rectMark1.size.width, 0, fontSize.width, self.bounds.size.height);
-
     mainLab.frame = rectMark1;
     //判断是否需要reserveTextLb
-    BOOL useReserve = fontSize.width > self.frame.size.width ? YES : NO;
-    
-    if (!useReserve)
-    {
-        return;
-    }
+//    BOOL useReserve = fontSize.width > self.frame.size.width ? YES : NO;
+//    
+//    if (!useReserve)
+//    {
+//        return;
+//    }
     isStop = NO;
-    rightLab.frame = rectMark2;
     [self startAnimate];
 }
 - (void)stop
@@ -72,26 +69,28 @@
 - (void)startAnimate
 {
     if (!isStop) {
-        UILabel* lbindex0 = labelArr[0];
-        UILabel* lbindex1 = labelArr[1];
-        [UIView transitionWithView:self duration:timeInterval options:UIViewAnimationOptionCurveLinear animations:^{
-            lbindex0.frame = CGRectMake(-rectMark1.size.width, 0, rectMark1.size.width, rectMark1.size.height);
-            lbindex1.frame = CGRectMake(lbindex0.frame.origin.x+lbindex0.frame.size.width, 0, lbindex1.frame.size.width, lbindex1.frame.size.height);
-            
-        } completion:^(BOOL finished) {
-            if (finished) {
-                lbindex0.frame = rectMark2;
-                lbindex1.frame = rectMark1;
-                [labelArr replaceObjectAtIndex:0 withObject:lbindex1];
-                [labelArr replaceObjectAtIndex:1 withObject:lbindex0];
-                [self startAnimate];
-            }
-        }];
+        CABasicAnimation *anima=[CABasicAnimation animation];
+        anima.keyPath=@"position.x";
+        anima.duration = [self displayDurationForString:mainLab.text];
+        anima.byValue = @(-rectMark1.size.width);
+        anima.removedOnCompletion=NO;
+        anima.fillMode=kCAFillModeForwards;
+        anima.repeatCount = CGFLOAT_MAX;
+        [mainLab.layer addAnimation:anima forKey:ANIMATIONKEY];
     }
 }
-- (NSTimeInterval)displayDurationForString:(NSString*)string {
-    
-    return string.length/5;
+
+- (NSTimeInterval)displayDurationForString:(NSString*)string
+{
+    double time = string.length / 5 ;
+    if (time < 1) {
+        time = 1;
+    }
+    else if (time > 5)
+    {
+        time = 5;
+    }
+    return time;
 }
 
 #pragma -mark -重写set方法
@@ -104,7 +103,6 @@
         return;
     }
     [mainLab setAttributedText:attributedStr];
-    [rightLab setAttributedText:attributedStr];
 }
 - (void)setFontSize:(CGFloat)fontSize
 {
@@ -127,11 +125,14 @@
     [attributeDict setObject:curFont forKey:NSFontAttributeName];
     NSMutableAttributedString *attributeStr = [[NSMutableAttributedString alloc]initWithString:mainLab.text attributes:attributeDict];
     [mainLab setAttributedText:attributeStr];
-    [rightLab setAttributedText:attributeStr];
 
     CGSize fontSizes = [mainLab.text sizeWithAttributes:attributeDict];
     rectMark1 = CGRectMake(0, 0, fontSizes.width, self.bounds.size.height);
-    rectMark2 = CGRectMake(rectMark1.origin.x+rectMark1.size.width, 0, fontSizes.width, self.bounds.size.height);
+    mainLab.frame = rectMark1;
+    if ([mainLab.layer animationForKey:ANIMATIONKEY]) {
+        [mainLab.layer removeAllAnimations];
+    }
+    [self start];
 }
 - (void)setFontStyle:(NSString *)fontStyle
 {
@@ -155,7 +156,10 @@
     [attributeDict setObject:font forKey:NSFontAttributeName];
     NSMutableAttributedString *attributeStr = [[NSMutableAttributedString alloc]initWithString:mainLab.text attributes:attributeDict];
     [mainLab setAttributedText:attributeStr];
-    [rightLab setAttributedText:attributeStr];
+    if ([mainLab.layer animationForKey:ANIMATIONKEY]) {
+        [mainLab.layer removeAllAnimations];
+    }
+    [self start];
 }
 - (void)setText:(NSString *)text
 {
@@ -165,18 +169,10 @@
     }
     
     [mainLab setAttributedText:attributeStr];
-    mainLab.text = text;
-    [rightLab setAttributedText:attributeStr];
-    rightLab.text = text;
-}
-- (void)setTextAlgin:(NSString *)textAlgin
-{
-//    NSMutableAttributedString *attributeStr = [[NSMutableAttributedString alloc]initWithAttributedString:[self getTextAttributeString]];
-//    if (attributeStr.length <= 0) {
-//        return;
-//    }
-//    [attributeStr addAttribute:(id)kCTForegroundColorAttributeName value:(id)[UIColor redColor].CGColor range:NSMakeRange(0, attributeStr.length)];
-//    [self setTextAttributeString:attributeStr];
+    if ([mainLab.layer animationForKey:ANIMATIONKEY]) {
+        [mainLab.layer removeAllAnimations];
+    }
+    [self start];
 }
 - (void)setTextFlag:(NSString *)textFlag
 {
@@ -192,6 +188,5 @@
     }
     NSMutableAttributedString *attributeStr = [[NSMutableAttributedString alloc]initWithString:mainLab.text attributes:attributeDict];
     [mainLab setAttributedText:attributeStr];
-    [rightLab setAttributedText:attributeStr];
 }
 @end
