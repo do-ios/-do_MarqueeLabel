@@ -25,6 +25,7 @@
     CGFloat curFontSize;
     NSString *curFontStyle;
     NSMutableDictionary *attributeDict;
+    Direction _direction;
 }
 - (instancetype)initWithFrame:(CGRect)frame
 {
@@ -51,7 +52,13 @@
     NSDictionary *fontDec = [mainLab.attributedText attributesAtIndex:0 effectiveRange:nil];
     CGSize fontSize = [mainLab.text sizeWithAttributes:fontDec];
     rectMark1 = CGRectMake(0, 0, fontSize.width, self.bounds.size.height);
-    mainLab.frame = rectMark1;
+    if (_direction == Left) {
+        mainLab.frame = rectMark1;
+    }
+    else
+    {
+        mainLab.frame = CGRectMake(-rectMark1.size.width, rectMark1.size.height, rectMark1.size.width, rectMark1.size.height);
+    }
     //判断是否需要reserveTextLb
 //    BOOL useReserve = fontSize.width > self.frame.size.width ? YES : NO;
 //    
@@ -72,7 +79,13 @@
         CABasicAnimation *anima=[CABasicAnimation animation];
         anima.keyPath=@"position.x";
         anima.duration = [self displayDurationForString:mainLab.text];
-        anima.byValue = @(-rectMark1.size.width);
+        if (_direction == Left) {
+            anima.byValue = @(-rectMark1.size.width);
+        }
+        else
+        {
+            anima.byValue = @(rectMark1.size.width);
+        }
         anima.removedOnCompletion=NO;
         anima.fillMode=kCAFillModeForwards;
         anima.repeatCount = CGFLOAT_MAX;
@@ -94,6 +107,16 @@
 }
 
 #pragma -mark -重写set方法
+- (void)setDirection:(Direction)direction
+{
+    if (direction == Left) {
+        _direction = Left;
+    }
+    else
+    {
+        _direction = Right;
+    }
+}
 -(void)setFontColor:(UIColor *)fontColor
 {
     attributeDict[NSForegroundColorAttributeName] = fontColor;

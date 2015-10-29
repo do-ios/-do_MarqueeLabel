@@ -56,6 +56,18 @@
  获取属性最初的默认值
  NSString *属性名 = [(doUIModule *)_model GetProperty:@"属性名"].DefaultValue;
  */
+- (void)change_direction:(NSString *)newValue
+{
+    //自己的代码实现
+    if ([newValue isEqualToString:@"left"]) {
+        _marqueeLabel.direction = 0;
+    }
+    else if ([newValue isEqualToString:@"right"])
+    {
+        _marqueeLabel.direction = 1;
+    }
+}
+
 - (void)change_fontColor:(NSString *)newValue
 {
     //自己的代码实现

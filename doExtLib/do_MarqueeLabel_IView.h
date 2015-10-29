@@ -12,11 +12,11 @@
 
 @required
 //属性方法
+- (void)change_direction:(NSString *)newValue;
 - (void)change_fontColor:(NSString *)newValue;
 - (void)change_fontSize:(NSString *)newValue;
 - (void)change_fontStyle:(NSString *)newValue;
 - (void)change_text:(NSString *)newValue;
-- (void)change_textAlign:(NSString *)newValue;
 - (void)change_textFlag:(NSString *)newValue;
 
 //同步或异步方法

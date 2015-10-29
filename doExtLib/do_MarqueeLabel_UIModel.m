@@ -19,6 +19,7 @@
 {
     [super OnInit];    
     //属性声明
+    [self RegistProperty:[[doProperty alloc]init:@"direction" :String :@"left" :NO]];
 	[self RegistProperty:[[doProperty alloc]init:@"fontColor" :String :@"000000FF" :NO]];
 	[self RegistProperty:[[doProperty alloc]init:@"fontSize" :Number :@"17" :NO]];
 	[self RegistProperty:[[doProperty alloc]init:@"fontStyle" :String :@"normal" :NO]];
