@@ -19,9 +19,9 @@ typedef NS_ENUM(NSInteger,Direction)
 @property (nonatomic,strong) NSString *text;
 @property (nonatomic,strong) NSString *textFlag;
 @property (nonatomic,assign) Direction direction;
-- (instancetype)initWithFrame:(CGRect)frame;
+@property (nonatomic,assign,getter=isStart) BOOL start;
+
+- (instancetype)initWithFrame:(CGRect)frame withFontSize:(NSInteger)fontsize;
 
 - (void)start;//开始跑马
-- (void)stop;//停止跑马
-
 @end

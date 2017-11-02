@@ -10,102 +10,90 @@
 #import <CoreText/CoreText.h>
 
 #define FONT_OBLIQUITY 15.0
-#define ANIMATIONKEY @"animationKey"
+#define IOS_7 ([[[UIDevice currentDevice] systemVersion] floatValue] <= 7.1f)
 
 @implementation doAutoScrollLabel
 {
     
     CGRect rectMark1;//标记第一个位置
-//    CGRect rectMark2;//标记第二个位置
-    NSMutableArray* labelArr;
     NSTimeInterval timeInterval;//时间
-    BOOL isStop;//停止
     UILabel *mainLab;
-//    UILabel *rightLab;
     CGFloat curFontSize;
     NSString *curFontStyle;
+    NSString *curFontFlag;
     NSMutableDictionary *attributeDict;
     Direction _direction;
+    NSTimer *_timer;
+    CGFloat _currentX;
+    NSString *_currentTitle;
 }
-- (instancetype)initWithFrame:(CGRect)frame
+- (instancetype)initWithFrame:(CGRect)frame withFontSize:(NSInteger)fontsize
 {
     self = [super initWithFrame:frame];
     if (self) {
         self.clipsToBounds = YES;
         mainLab = [[UILabel alloc]init];
-//        rightLab = [[UILabel alloc]init];
         [self addSubview:mainLab];
-//        [self addSubview:rightLab];
-        labelArr = [NSMutableArray arrayWithObject:mainLab];
-//        [labelArr addObject:rightLab];
-        curFontSize = 11;
+        //默认字体
         curFontStyle = @"normal";
         attributeDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-                                           [UIFont systemFontOfSize:11],NSFontAttributeName,
+                                           [UIFont systemFontOfSize:fontsize],NSFontAttributeName,
                                            [UIColor blackColor],NSForegroundColorAttributeName,
-                                           NSUnderlineStyleAttributeName,@(NSUnderlineStyleNone),nil];
+                                           @(NSUnderlineStyleNone),NSUnderlineStyleAttributeName,nil];
     }
+    curFontSize = fontsize;
+    self.start = NO;
     return self;
 }
 - (void)start
 {
-    NSDictionary *fontDec = [mainLab.attributedText attributesAtIndex:0 effectiveRange:nil];
-    CGSize fontSize = [mainLab.text sizeWithAttributes:fontDec];
-    rectMark1 = CGRectMake(0, 0, fontSize.width, self.bounds.size.height);
+    if (mainLab.text.length == 0) {
+        return;
+    }
+//    NSDictionary *fontDec = [mainLab.attributedText attributesAtIndex:0 effectiveRange:nil];
+    CGSize fontSize = [mainLab.text boundingRectWithSize:CGSizeMake(MAXFLOAT, 60) options:NSStringDrawingUsesFontLeading attributes:attributeDict context:nil].size;
+    rectMark1 = CGRectMake(0, 0, fontSize.width + 10, self.bounds.size.height);
     if (_direction == Left) {
-        mainLab.frame = rectMark1;
+        mainLab.frame = CGRectMake(self.frame.size.width, 0, rectMark1.size.width, rectMark1.size.height);
+        _currentX = self.frame.size.width;
+        
     }
     else
     {
-        mainLab.frame = CGRectMake(-rectMark1.size.width, rectMark1.size.height, rectMark1.size.width, rectMark1.size.height);
+        mainLab.frame = CGRectMake(-rectMark1.size.width, 0, rectMark1.size.width + 10, rectMark1.size.height);
+        _currentX = 0;
     }
-    //判断是否需要reserveTextLb
-//    BOOL useReserve = fontSize.width > self.frame.size.width ? YES : NO;
-//    
-//    if (!useReserve)
-//    {
-//        return;
-//    }
-    isStop = NO;
-    [self startAnimate];
-}
-- (void)stop
-{
-    isStop = YES;
-}
-- (void)startAnimate
-{
-    if (!isStop) {
-        CABasicAnimation *anima=[CABasicAnimation animation];
-        anima.keyPath=@"position.x";
-        anima.duration = [self displayDurationForString:mainLab.text];
-        if (_direction == Left) {
-            anima.byValue = @(-rectMark1.size.width);
-        }
-        else
-        {
-            anima.byValue = @(rectMark1.size.width);
-        }
-        anima.removedOnCompletion=NO;
-        anima.fillMode=kCAFillModeForwards;
-        anima.repeatCount = CGFLOAT_MAX;
-        [mainLab.layer addAnimation:anima forKey:ANIMATIONKEY];
-    }
-}
 
-- (NSTimeInterval)displayDurationForString:(NSString*)string
+    self.start = YES;
+    [self startTimer];
+}
+- (void)startTimer
 {
-    double time = string.length / 5 ;
-    if (time < 1) {
-        time = 1;
+    if (_timer == nil) {
+        _timer = [NSTimer timerWithTimeInterval:0.02 target:self selector:@selector(changeViewX) userInfo:nil repeats:YES];
+        [[NSRunLoop mainRunLoop]addTimer:_timer forMode:NSRunLoopCommonModes];
+        [_timer fire];
     }
-    else if (time > 5)
+}
+- (void) changeViewX
+{
+    if (_direction == Left) {
+        _currentX -= 1;
+        if (_currentX <= -mainLab.frame.size.width) {
+            _currentX = self.frame.size.width;
+        }
+         mainLab.frame = CGRectMake(_currentX, 0, mainLab.frame.size.width, mainLab.frame.size.height);
+    }
+    else
     {
-        time = 5;
+        _currentX += 1;
+        if (_currentX >= (self.frame.size.width + mainLab.frame.size.width)) {
+            _currentX = 0;
+        }
+         mainLab.frame = CGRectMake( -mainLab.frame.size.width + _currentX, 0, mainLab.frame.size.width, mainLab.frame.size.height);
     }
-    return time;
+   
 }
-
 #pragma -mark -重写set方法
 - (void)setDirection:(Direction)direction
 {
@@ -120,12 +108,9 @@
 -(void)setFontColor:(UIColor *)fontColor
 {
     attributeDict[NSForegroundColorAttributeName] = fontColor;
-    NSMutableAttributedString *attributedStr = [[NSMutableAttributedString alloc]initWithString:mainLab.text attributes:attributeDict];
-    
-    if (attributedStr.length <= 0) {
-        return;
+    if (_currentTitle) {
+        [self setText:_currentTitle];
     }
-    [mainLab setAttributedText:attributedStr];
 }
 - (void)setFontSize:(CGFloat)fontSize
 {
@@ -146,16 +131,12 @@
         curFont = [UIFont fontWithDescriptor:desc size:curFontSize];
     }
     [attributeDict setObject:curFont forKey:NSFontAttributeName];
-    NSMutableAttributedString *attributeStr = [[NSMutableAttributedString alloc]initWithString:mainLab.text attributes:attributeDict];
-    [mainLab setAttributedText:attributeStr];
-
-    CGSize fontSizes = [mainLab.text sizeWithAttributes:attributeDict];
-    rectMark1 = CGRectMake(0, 0, fontSizes.width, self.bounds.size.height);
-    mainLab.frame = rectMark1;
-    if ([mainLab.layer animationForKey:ANIMATIONKEY]) {
-        [mainLab.layer removeAllAnimations];
+    if (curFontFlag) {
+        [self setTextFlag:curFontFlag];
     }
-    [self start];
+    if (_currentTitle) {
+        [self setText:_currentTitle];
+    }
 }
 - (void)setFontStyle:(NSString *)fontStyle
 {
@@ -175,30 +156,31 @@
         UIFontDescriptor *desc = [ UIFontDescriptor fontDescriptorWithName :[ UIFont systemFontOfSize :curFontSize ]. fontName matrix :matrix];
         font = [UIFont fontWithDescriptor:desc size:curFontSize];
     }
-    else if([fontStyle isEqualToString:@"bold_italic"]){}//不支持
+    else if([fontStyle isEqualToString:@"bold_italic"]){ return;}//不支持
     [attributeDict setObject:font forKey:NSFontAttributeName];
-    NSMutableAttributedString *attributeStr = [[NSMutableAttributedString alloc]initWithString:mainLab.text attributes:attributeDict];
-    [mainLab setAttributedText:attributeStr];
-    if ([mainLab.layer animationForKey:ANIMATIONKEY]) {
-        [mainLab.layer removeAllAnimations];
+    if (_currentTitle) {
+        [self setText:_currentTitle];
     }
-    [self start];
+
 }
 - (void)setText:(NSString *)text
 {
+    _currentTitle = text;
     NSMutableAttributedString *attributeStr = [[NSMutableAttributedString alloc]initWithString:text attributes:attributeDict];
     if (attributeStr.length <= 0) {
         return;
     }
-    
     [mainLab setAttributedText:attributeStr];
-    if ([mainLab.layer animationForKey:ANIMATIONKEY]) {
-        [mainLab.layer removeAllAnimations];
-    }
-    [self start];
+    CGSize fontSizes = [mainLab.text boundingRectWithSize:CGSizeMake(MAXFLOAT, 60) options:NSStringDrawingUsesFontLeading attributes:attributeDict context:nil].size;
+    rectMark1 = CGRectMake(_currentX, 0, fontSizes.width + 10, self.bounds.size.height);
+    mainLab.frame = rectMark1;
 }
 - (void)setTextFlag:(NSString *)textFlag
 {
+    curFontFlag = textFlag;
+    if (IOS_7 && curFontSize < 18) {
+        return;
+    }
     if ([textFlag isEqualToString:@"normal" ]) {
         attributeDict[NSUnderlineStyleAttributeName] = @(NSUnderlineStyleNone);
         attributeDict[NSStrikethroughStyleAttributeName] = @(NSUnderlineStyleNone);
@@ -207,9 +189,15 @@
     }
     else if ([textFlag isEqualToString:@"strikethrough" ]) {
         [attributeDict setObject:@(NSUnderlineStyleSingle) forKey:NSStrikethroughStyleAttributeName];
-        attributeDict[NSUnderlineStyleAttributeName] = @(NSUnderlineStyleSingle);
     }
-    NSMutableAttributedString *attributeStr = [[NSMutableAttributedString alloc]initWithString:mainLab.text attributes:attributeDict];
-    [mainLab setAttributedText:attributeStr];
+    if (_currentTitle) {
+        [self setText:_currentTitle];
+    }
+}
+
+- (void)dealloc
+{
+    [_timer invalidate];
+    _timer = nil;
 }
 @end

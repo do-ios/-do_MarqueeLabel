@@ -28,7 +28,8 @@
 - (void) LoadView: (doUIModule *) _doUIModule
 {
     _model = (typeof(_model)) _doUIModule;
-    _marqueeLabel = [[doAutoScrollLabel alloc]initWithFrame:CGRectMake(0,0, _model.RealWidth, _model.RealHeight)];
+    NSInteger fontSize = [doUIModuleHelper GetDeviceFontSize:[[_model GetProperty:@"fontSize"].DefaultValue intValue] :_model.XZoom :_model.YZoom];
+    _marqueeLabel = [[doAutoScrollLabel alloc]initWithFrame:CGRectMake(0,0, _model.RealWidth, _model.RealHeight) withFontSize:fontSize];
     [self addSubview:_marqueeLabel];
 }
 //销毁所有的全局对象
@@ -36,6 +37,7 @@
 {
     //自定义的全局属性,view-model(UIModel)类销毁时会递归调用<子view-model(UIModel)>的该方法，将上层的引用切断。所以如果self类有非原生扩展，需主动调用view-model(UIModel)的该方法。(App || Page)-->强引用-->view-model(UIModel)-->强引用-->view
     _marqueeLabel = nil;
+    
 }
 //实现布局
 - (void) OnRedraw
@@ -66,6 +68,9 @@
     {
         _marqueeLabel.direction = 1;
     }
+    if (!_marqueeLabel.isStart) {
+        [_marqueeLabel start];
+    }
 }
 
 - (void)change_fontColor:(NSString *)newValue
@@ -77,8 +82,7 @@
 - (void)change_fontSize:(NSString *)newValue
 {
     //自己的代码实现
-    [[_model GetProperty:@"fontSize"].DefaultValue integerValue];
-    CGFloat fontSize = [[doTextHelper Instance] StrToInt:newValue :[[_model GetProperty:@"fontSize"].DefaultValue intValue]];
+    NSInteger fontSize = [doUIModuleHelper GetDeviceFontSize:[[doTextHelper Instance] StrToInt:newValue :[[_model GetProperty:@"fontSize"].DefaultValue intValue]] :_model.XZoom :_model.YZoom];
     _marqueeLabel.fontSize = fontSize;
 }
 - (void)change_fontStyle:(NSString *)newValue
@@ -90,6 +94,9 @@
 {
     //自己的代码实现
     _marqueeLabel.text = newValue;
+    if (!_marqueeLabel.isStart) {
+        [_marqueeLabel start];
+    }
 }
 - (void)change_textFlag:(NSString *)newValue
 {
